@@ -1,0 +1,216 @@
+pipeline {
+    agent any
+    environment {
+        currentDir = pwd()
+        remoteID = "lgcns"
+        remoteIP = "172.21.1.22"
+        remoteBaseDir = "/home/lgcns/docker"
+        mountDir = "${currentDir}/mount"
+        separationPhrase = "====================================="
+        DOCKER_NICKNAME = "kudong"
+        BACKEND_IMAGE_NAME = "newspace-backend"
+        FRONTEND_IMAGE_NAME = "newspace-frontend"
+        EUREKA_IMAGE_NAME = "newspace-eureka"
+        GATEWAY_IMAGE_NAME = "newspace-gateway"
+        DEPLOY_NAME = "newspace-deploy"
+        TAG = "latest"
+    }
+    stages {
+        
+        stage('Clean Workspace And Docker Images') {
+            steps {
+                script {
+                    sh "docker image prune -f"
+                    deleteDir()  // 워크스페이스 정리
+                    echo 'Workspace and Docker Images cleaned'
+                    sh "docker images -a"
+                }
+            }
+        }
+        
+        stage('Git clone') {
+            steps {
+                script {
+                    parallel(
+                        "Clone Frontend": {
+                            dir('newspace-frontend') {
+                                git branch: 'main', url: 'https://github.com/newspaceProject/newspace-frontend'
+                            }
+                        },
+                        "Clone Backend": {
+                            dir('newspace-backend') {
+                                git branch: 'main', url: 'https://github.com/newspaceProject/newspace-backend'
+                            }
+                        },
+                        "Clone Eureka": {
+                            dir('newspace-eureka') {
+                                git branch: 'main', url: 'https://github.com/newspaceProject/newspace-eureka'
+                            }
+                        },
+                        "Clone Gateway": {
+                            dir('newspace-gateway') {
+                                git branch: 'main', url: 'https://github.com/newspaceProject/newspace-gateway'
+                            }
+                        },
+                        "Clone Deploy": {
+                            dir('newspace-deploy') {
+                                git branch: 'main', url: 'https://github.com/newspaceProject/newspace-deploy'
+                            }
+                        }
+                    )
+                }
+            }
+        }
+        
+        stage('Initial Setup') {
+            steps {
+                script {
+                    echo "${separationPhrase}"
+                    echo "Newspace Deploy Process Start......"
+                    echo "${separationPhrase}"
+                    echo "currentDir = ${currentDir}"
+                    echo "mountDir = ${mountDir}"
+                    echo "remoteID = ${remoteID}"
+                    echo "remoteIP = ${remoteIP}"
+                    echo "DOCKER_NICKNAME = ${DOCKER_NICKNAME}"
+                    echo "BACKEND_IMAGE_NAME = ${BACKEND_IMAGE_NAME}"
+                    echo "FRONTEND_IMAGE_NAME = ${FRONTEND_IMAGE_NAME}"
+                    echo "DEPLOY_NAME = ${DEPLOY_NAME}"
+                    echo "TAG = ${TAG}"
+                    echo "${separationPhrase}"
+                }
+            }
+        }
+    
+        stage('Prepare Docker Files') {
+            steps {
+                script {
+                    echo "Creating images directory..."
+                    sh "mkdir -p ${currentDir}/images"
+                    
+                    echo "Copying project-specific files..."
+                    sh "cp -r -f ./${DEPLOY_NAME}/release/frontend/* ${currentDir}/${FRONTEND_IMAGE_NAME}/${FRONTEND_IMAGE_NAME}"
+                    sh "cp -r -f ./${DEPLOY_NAME}/release-cloud/eureka/* ${currentDir}/${EUREKA_IMAGE_NAME}"
+                    sh "cp -r -f ./${DEPLOY_NAME}/release-cloud/gateway/* ${currentDir}/${GATEWAY_IMAGE_NAME}"
+                    sh "cp -r -f ./${DEPLOY_NAME}/release-cloud/backend/* ${currentDir}/${BACKEND_IMAGE_NAME}"
+                }
+            }
+        }
+
+        stage('Stop and Clean Remote Docker') {
+            steps {
+                echo "Stopping and cleaning Docker on the remote server..."
+                sh """
+                    ssh ${remoteID}@${remoteIP} /bin/bash <<'EOT'
+                    cd /home/lgcns/docker
+                    docker compose down
+                    docker compose -f docker-compose-cloud.yml down
+                    docker image rmi newspace-backend:latest
+                    docker image rmi newspace-frontend:latest
+                    docker image rmi newspace-eureka:latest
+                    docker image rmi newspace-gateway:latest
+                    docker image prune -f
+                    docker builder prune -a -f
+                    echo "Docker images after cleanup:"
+                    docker images -a
+                """
+            }
+        }
+
+        stage('Build Eureka Docker Image') {
+            steps {
+                echo "Building Eureka Docker image..."
+                dir("${currentDir}/${EUREKA_IMAGE_NAME}") {
+                    sh """
+                        chmod +x gradlew
+                        ./gradlew clean build -x test
+                        docker buildx build --no-cache -t ${EUREKA_IMAGE_NAME}:${TAG} .
+                    """
+                    sh "docker save -o ${currentDir}/images/${EUREKA_IMAGE_NAME}.tar ${EUREKA_IMAGE_NAME}:${TAG}"
+                }
+            }
+        }
+
+        stage('Build Gateway Docker Image') {
+            steps {
+                echo "Building Gateway Docker image..."
+                dir("${currentDir}/${GATEWAY_IMAGE_NAME}") {
+                    sh """
+                        chmod +x gradlew
+                        ./gradlew clean build -x test
+                        docker buildx build --no-cache -t ${GATEWAY_IMAGE_NAME}:${TAG} .
+                    """
+                    sh "docker save -o ${currentDir}/images/${GATEWAY_IMAGE_NAME}.tar ${GATEWAY_IMAGE_NAME}:${TAG}"
+                }
+            }
+        }
+
+        stage('Build Frontend Docker Image') {
+            steps {
+                echo "Building Frontend Docker image..."
+                dir("${currentDir}/${FRONTEND_IMAGE_NAME}/${FRONTEND_IMAGE_NAME}") {
+                    sh """
+                        docker buildx build --no-cache --build-arg NEWSPACE_TEST_BACKEND_URL=http://kudong.kr:55021/ -t ${FRONTEND_IMAGE_NAME}:${TAG} .
+                    """
+                    sh "docker save -o ${currentDir}/images/${FRONTEND_IMAGE_NAME}.tar ${FRONTEND_IMAGE_NAME}:${TAG}"
+                }
+            }
+        }
+
+        stage('Build Backend Docker Image') {
+            steps {
+                echo "Building Backend Docker image..."
+                dir("${currentDir}/${BACKEND_IMAGE_NAME}") {
+                    sh """
+                        chmod +x gradlew
+                        ./gradlew clean build -x test
+                        docker buildx build -t ${BACKEND_IMAGE_NAME}:${TAG} .
+                    """
+                    sh "docker save -o ${currentDir}/images/${BACKEND_IMAGE_NAME}.tar ${BACKEND_IMAGE_NAME}:${TAG}"
+                }
+            }
+        }
+
+        stage('Mount Remote Server') {
+            steps {
+                echo "Mounting remote server..."
+                sh "mkdir -p ${mountDir}"
+                sh "sshfs ${remoteID}@${remoteIP}:${remoteBaseDir} ${mountDir}"
+                echo "=> Successfully Mounted sshfs ${remoteID}@${remoteIP}:${remoteBaseDir} <=> ${mountDir}"
+            }
+        }
+
+        stage('Copy Docker Images to Remote Server') {
+            steps {
+                echo "Copying Docker images to remote server..."
+                sh "cp -r -f ${currentDir}/images/*.tar ${mountDir}"
+                echo "=> Successfully copied Docker images to Remote Server"
+            }
+        }
+
+        stage('Unmount Remote Server') {
+            steps {
+                echo "Unmounting remote server..."
+                sh "umount ${mountDir}"
+                echo "=> Successfully Unmounted sshfs ${remoteID}@${remoteIP}:${remoteBaseDir} <=> ${mountDir}"
+            }
+        }
+
+        stage('Run Docker Containers on Remote Server') {
+            steps {
+                echo "Running Docker containers on the remote server..."
+                sh """
+                    ssh ${remoteID}@${remoteIP} /bin/bash <<'EOT'
+                    cd ${remoteBaseDir}
+                    docker load -i newspace-backend.tar
+                    docker load -i newspace-frontend.tar
+                    docker load -i newspace-eureka.tar
+                    docker load -i newspace-gateway.tar
+                    docker compose -f docker-compose-cloud.yml up -d --scale newspace-backend=3
+                """
+                echo "Newspace Deploy Finished!"
+            }
+        }
+    
+    }
+}

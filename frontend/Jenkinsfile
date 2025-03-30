@@ -7,18 +7,6 @@ pipeline {
             }
         }
 
-        stage('JUnit') {
-            steps {
-                echo "JUnit passed successfully!";
-            }
-        }
-
-        stage('Code Analysis') {
-            steps {
-                echo "Code Analysis completed successfully!";
-            }
-        }
-
         stage('Deploy') {
             steps {
                 echo "Deployed successfully!";
