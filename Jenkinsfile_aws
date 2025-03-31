@@ -301,9 +301,13 @@ pipeline {
             steps {
                 sh """
                     #!/bin/bash
-                    echo 'export USER_SERVICE_STATUS="blue"' >> ~/.bashrc
-                    echo 'export NOTICE_SERVICE_STATUS="blue"' >> ~/.bashrc
-                    echo 'export NEWS_SERVICE_STATUS="blue"' >> ~/.bashrc
+                    var_name="USER_SERVICE_STATUS"
+                    new_value="blue"
+                    sed -i "s/^export $var_name=.*/export $var_name=\"$new_value\"/" ~/.bashrc
+                    var_name="NOTICE_SERVICE_STATUS"
+                    sed -i "s/^export $var_name=.*/export $var_name=\"$new_value\"/" ~/.bashrc
+                    var_name="NEWS_SERVICE_STATUS"
+                    sed -i "s/^export $var_name=.*/export $var_name=\"$new_value\"/" ~/.bashrc
                 """               
             }
         }
