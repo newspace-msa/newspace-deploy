@@ -253,10 +253,10 @@ pipeline {
         stage('Run Containers on AWS EC2-CONFIG/RABBITMQ') {
             steps {
                 sh """
-                    docker pull 803691999553.dkr.ecr.us-east-1.amazonaws.com/mini-project-9/newspace-config-service:latest
                     scp -r -i /var/jenkins_home/aws.pem /var/jenkins_home/docker/ec2-config/* ubuntu@${EC2_CONFIG_IP}:/deploy
                     ssh -i /var/jenkins_home/aws.pem ubuntu@${EC2_CONFIG_IP} /bin/bash <<'EOT'
                         aws ecr get-login-password --region us-east-1 | sudo docker login --username AWS --password-stdin 803691999553.dkr.ecr.us-east-1.amazonaws.com
+                        docker pull 803691999553.dkr.ecr.us-east-1.amazonaws.com/mini-project-9/newspace-config-service:latest
                         cd /deploy
                         docker compose up -d
                 """         
@@ -267,11 +267,11 @@ pipeline {
             steps {
                 sh """
                     sleep 10;
-                    docker pull 803691999553.dkr.ecr.us-east-1.amazonaws.com/mini-project-9/newspace-eureka:latest
-                    docker pull 803691999553.dkr.ecr.us-east-1.amazonaws.com/mini-project-9/newspace-gateway:latest
                     scp -r -i /var/jenkins_home/aws.pem /var/jenkins_home/docker/ec2-eureka/* ubuntu@${EC2_EUREKA_IP}:/deploy
                     ssh -i /var/jenkins_home/aws.pem ubuntu@${EC2_EUREKA_IP} /bin/bash <<'EOT'
                         aws ecr get-login-password --region us-east-1 | sudo docker login --username AWS --password-stdin 803691999553.dkr.ecr.us-east-1.amazonaws.com
+                        docker pull 803691999553.dkr.ecr.us-east-1.amazonaws.com/mini-project-9/newspace-eureka:latest
+                        docker pull 803691999553.dkr.ecr.us-east-1.amazonaws.com/mini-project-9/newspace-gateway:latest
                         cd /deploy
                         docker compose up -d
                 """
