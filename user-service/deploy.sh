@@ -1,6 +1,6 @@
 #!/bin/bash
 currentDir=$(pwd -P);
-server_starting_wait_time=40
+server_starting_wait_time=10
 service_name="newspace-user-service"
 new_service_color="none"
 
