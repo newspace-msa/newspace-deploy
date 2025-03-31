@@ -29,12 +29,6 @@ pipeline {
                     deleteDir()  // 워크스페이스 정리
                     echo 'Workspace and Docker Images cleaned'
                     sh """
-                        docker image rmi newspace-config-service:latest
-                        docker image rmi newspace-news-service:latest
-                        docker image rmi newspace-notice-service:latest
-                        docker image rmi newspace-user-service:latest
-                        docker image rmi newspace-eureka:latest
-                        docker image rmi newspace-gateway:latest
                         docker image prune -f
                         docker builder prune -a -f
                         echo "Docker images after cleanup:"
