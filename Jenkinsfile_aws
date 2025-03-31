@@ -26,10 +26,20 @@ pipeline {
         stage('Clean Workspace And Docker Images') {
             steps {
                 script {
-                    sh "docker image prune -f"
                     deleteDir()  // 워크스페이스 정리
                     echo 'Workspace and Docker Images cleaned'
-                    sh "docker images -a"
+                    sh """
+                        docker image rmi newspace-config-service:latest
+                        docker image rmi newspace-news-service:latest
+                        docker image rmi newspace-notice-service:latest
+                        docker image rmi newspace-user-service:latest
+                        docker image rmi newspace-eureka:latest
+                        docker image rmi newspace-gateway:latest
+                        docker image prune -f
+                        docker builder prune -a -f
+                        echo "Docker images after cleanup:"
+                        docker images -a
+                    """
                 }
             }
         }
@@ -97,39 +107,6 @@ pipeline {
                     echo "TAG = ${TAG}"
                     echo "${separationPhrase}"
                 }
-            }
-        }
-    
-        // stage('Prepare Docker Files') {
-        //     steps {
-        //         script {
-        //             echo "Creating images directory..."
-        //             sh "mkdir -p ${currentDir}/images"
-                    
-        //             echo "Copying project-specific files..."
-        //             sh "cp -r -f ./${DEPLOY_NAME}/release/frontend/* ${currentDir}/${FRONTEND_IMAGE_NAME}/${FRONTEND_IMAGE_NAME}"
-        //             sh "cp -r -f ./${DEPLOY_NAME}/release-cloud/eureka/* ${currentDir}/${EUREKA_IMAGE_NAME}"
-        //             sh "cp -r -f ./${DEPLOY_NAME}/release-cloud/gateway/* ${currentDir}/${GATEWAY_IMAGE_NAME}"
-        //             sh "cp -r -f ./${DEPLOY_NAME}/release-cloud/backend/* ${currentDir}/${BACKEND_IMAGE_NAME}"
-        //         }
-        //     }
-        // }
-
-        stage('Stop and Clean Remote Docker') {
-            steps {
-                echo "Stopping and cleaning Docker on the remote server..."
-                sh """
-                    docker image rmi newspace-config-service:latest
-                    docker image rmi newspace-news-service:latest
-                    docker image rmi newspace-notice-service:latest
-                    docker image rmi newspace-user-service:latest
-                    docker image rmi newspace-eureka:latest
-                    docker image rmi newspace-gateway:latest
-                    docker image prune -f
-                    docker builder prune -a -f
-                    echo "Docker images after cleanup:"
-                    docker images -a
-                """
             }
         }
 
