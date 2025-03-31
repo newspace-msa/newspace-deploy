@@ -248,7 +248,7 @@ pipeline {
         stage('Run Containers on AWS EC2-CONFIG/RABBITMQ') {
             steps {
                 sh """
-                    scp -r -i /var/jenkins_home/aws.pem /var/jenkins_home/docker/ec2-config ubuntu@${EC2_CONFIG_IP}:/deploy
+                    scp -r -i /var/jenkins_home/aws.pem /var/jenkins_home/docker/ec2-config/* ubuntu@${EC2_CONFIG_IP}:/deploy
                     ssh -i /var/jenkins_home/aws.pem ubuntu@${EC2_CONFIG_IP} /bin/bash <<'EOT'
                         cd /deploy/ec2-config
                         docker compose up -d
@@ -259,7 +259,7 @@ pipeline {
         stage('Run Containers on EC2-EUREKA/APIGATEWAY') {
             steps {
                 sh """
-                    scp -r -i /var/jenkins_home/aws.pem /var/jenkins_home/docker/ec2-eureka ubuntu@${EC2_EUREKA_IP}:/deploy
+                    scp -r -i /var/jenkins_home/aws.pem /var/jenkins_home/docker/ec2-eureka/* ubuntu@${EC2_EUREKA_IP}:/deploy
                     ssh -i /var/jenkins_home/aws.pem ubuntu@${EC2_EUREKA_IP} /bin/bash <<'EOT'
                         cd /deploy/ec2-eureka
                         docker compose up -d
@@ -270,7 +270,7 @@ pipeline {
         stage('Run Containers on EC2-DOMAIN') {
             steps {
                 sh """
-                    scp -r -i /var/jenkins_home/aws.pem /var/jenkins_home/docker/ec2-domain ubuntu@${EC2_EUREKA_IP}:/deploy
+                    scp -r -i /var/jenkins_home/aws.pem /var/jenkins_home/docker/ec2-domain/* ubuntu@${EC2_EUREKA_IP}:/deploy
                     ssh -i /var/jenkins_home/aws.pem ubuntu@${EC2_DOMAIN_IP} /bin/bash <<'EOT'
                         cd /deploy/ec2-domain/user
                         docker compose -f docker-compose-user-blue.yml up -d --scale newspace-user-service-blue=2
