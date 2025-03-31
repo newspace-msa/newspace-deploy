@@ -8,12 +8,18 @@ pipeline {
         mountDir = "${currentDir}/mount"
         separationPhrase = "====================================="
         DOCKER_NICKNAME = "kudong"
-        BACKEND_IMAGE_NAME = "newspace-backend"
+        CONFIG_SERVER_IMAGE_NAME = "newspace-config-service"
+        BACKEND_USER_IMAGE_NAME = "newspace-user-service"
+        BACKEND_NOTICE_IMAGE_NAME = "newspace-notice-service"
+        BACKEND_NEWS_IMAGE_NAME = "newspace-news-service"
         FRONTEND_IMAGE_NAME = "newspace-frontend"
         EUREKA_IMAGE_NAME = "newspace-eureka"
         GATEWAY_IMAGE_NAME = "newspace-gateway"
         DEPLOY_NAME = "newspace-deploy"
         TAG = "latest"
+        EC2_CONFIG_IP="34.230.80.208"
+        EC2_EUREKA_IP="3.82.228.233"
+        EC2_DOMAIN_IP="13.218.64.35"
     }
     stages {
         
@@ -32,29 +38,39 @@ pipeline {
             steps {
                 script {
                     parallel(
-                        "Clone Frontend": {
-                            dir('newspace-frontend') {
-                                git branch: 'main', url: 'https://github.com/newspaceProject/newspace-frontend'
+                        "Clone Config-server": {
+                            dir('newspace-config-service') {
+                                git branch: 'main', url: 'https://github.com/newspace-msa/newspace-config-service'
                             }
                         },
-                        "Clone Backend": {
-                            dir('newspace-backend') {
-                                git branch: 'main', url: 'https://github.com/newspaceProject/newspace-backend'
+                        "Clone Backend-News": {
+                            dir('newspace-news-service') {
+                                git branch: 'main', url: 'https://github.com/newspace-msa/newspace-news-service'
+                            }
+                        },
+                        "Clone Backend-User": {
+                            dir('newspace-user-service') {
+                                git branch: 'main', url: 'https://github.com/newspace-msa/newspace-user-service'
+                            }
+                        },
+                        "Clone Backend-Notice": {
+                            dir('newspace-notice-service') {
+                                git branch: 'main', url: 'https://github.com/newspace-msa/newspace-notice-service'
                             }
                         },
                         "Clone Eureka": {
                             dir('newspace-eureka') {
-                                git branch: 'main', url: 'https://github.com/newspaceProject/newspace-eureka'
+                                git branch: 'main', url: 'https://github.com/newspace-msa/newspace-eureka'
                             }
                         },
                         "Clone Gateway": {
                             dir('newspace-gateway') {
-                                git branch: 'main', url: 'https://github.com/newspaceProject/newspace-gateway'
+                                git branch: 'main', url: 'https://github.com/newspace-msa/newspace-gateway'
                             }
                         },
                         "Clone Deploy": {
                             dir('newspace-deploy') {
-                                git branch: 'main', url: 'https://github.com/newspaceProject/newspace-deploy'
+                                git branch: 'main', url: 'https://github.com/newspace-msa/newspace-deploy'
                             }
                         }
                     )
@@ -73,8 +89,10 @@ pipeline {
                     echo "remoteID = ${remoteID}"
                     echo "remoteIP = ${remoteIP}"
                     echo "DOCKER_NICKNAME = ${DOCKER_NICKNAME}"
-                    echo "BACKEND_IMAGE_NAME = ${BACKEND_IMAGE_NAME}"
-                    echo "FRONTEND_IMAGE_NAME = ${FRONTEND_IMAGE_NAME}"
+                    echo "CONFIG_SERVER_IMAGE_NAME = ${CONFIG_SERVER_IMAGE_NAME}"
+                    echo "BACKEND_USER_IMAGE_NAME = ${BACKEND_USER_IMAGE_NAME}"
+                    echo "BACKEND_NOTICE_IMAGE_NAME = ${BACKEND_NOTICE_IMAGE_NAME}"
+                    echo "BACKEND_NEWS_IMAGE_NAME = ${BACKEND_NEWS_IMAGE_NAME}"
                     echo "DEPLOY_NAME = ${DEPLOY_NAME}"
                     echo "TAG = ${TAG}"
                     echo "${separationPhrase}"
@@ -82,31 +100,29 @@ pipeline {
             }
         }
     
-        stage('Prepare Docker Files') {
-            steps {
-                script {
-                    echo "Creating images directory..."
-                    sh "mkdir -p ${currentDir}/images"
+        // stage('Prepare Docker Files') {
+        //     steps {
+        //         script {
+        //             echo "Creating images directory..."
+        //             sh "mkdir -p ${currentDir}/images"
                     
-                    echo "Copying project-specific files..."
-                    sh "cp -r -f ./${DEPLOY_NAME}/release/frontend/* ${currentDir}/${FRONTEND_IMAGE_NAME}/${FRONTEND_IMAGE_NAME}"
-                    sh "cp -r -f ./${DEPLOY_NAME}/release-cloud/eureka/* ${currentDir}/${EUREKA_IMAGE_NAME}"
-                    sh "cp -r -f ./${DEPLOY_NAME}/release-cloud/gateway/* ${currentDir}/${GATEWAY_IMAGE_NAME}"
-                    sh "cp -r -f ./${DEPLOY_NAME}/release-cloud/backend/* ${currentDir}/${BACKEND_IMAGE_NAME}"
-                }
-            }
-        }
+        //             echo "Copying project-specific files..."
+        //             sh "cp -r -f ./${DEPLOY_NAME}/release/frontend/* ${currentDir}/${FRONTEND_IMAGE_NAME}/${FRONTEND_IMAGE_NAME}"
+        //             sh "cp -r -f ./${DEPLOY_NAME}/release-cloud/eureka/* ${currentDir}/${EUREKA_IMAGE_NAME}"
+        //             sh "cp -r -f ./${DEPLOY_NAME}/release-cloud/gateway/* ${currentDir}/${GATEWAY_IMAGE_NAME}"
+        //             sh "cp -r -f ./${DEPLOY_NAME}/release-cloud/backend/* ${currentDir}/${BACKEND_IMAGE_NAME}"
+        //         }
+        //     }
+        // }
 
         stage('Stop and Clean Remote Docker') {
             steps {
                 echo "Stopping and cleaning Docker on the remote server..."
                 sh """
-                    ssh ${remoteID}@${remoteIP} /bin/bash <<'EOT'
-                    cd /home/lgcns/docker
-                    docker compose down
-                    docker compose -f docker-compose-cloud.yml down
-                    docker image rmi newspace-backend:latest
-                    docker image rmi newspace-frontend:latest
+                    docker image rmi newspace-config-service:latest
+                    docker image rmi newspace-news-service:latest
+                    docker image rmi newspace-notice-service:latest
+                    docker image rmi newspace-user-service:latest
                     docker image rmi newspace-eureka:latest
                     docker image rmi newspace-gateway:latest
                     docker image prune -f
@@ -116,6 +132,50 @@ pipeline {
                 """
             }
         }
+
+        stage('Stop Remote EC2-CONFIG/RABBITMQ') {
+            steps {
+                echo "Stopping and cleaning Docker on the remote server..."
+                sh """
+                    ssh -i /var/jenkins_home/aws.pem ubuntu@${EC2_CONFIG_IP} /bin/bash <<'EOT'
+                        echo hello world
+                """
+            }
+        }
+
+        stage('Stop Remote EC2-EUREKA/APIGATEWAY') {
+            steps {
+                echo "Stopping and cleaning Docker on the remote server..."
+                sh """
+                    ssh -i /var/jenkins_home/aws.pem ubuntu@${EC2_EUREKA_IP} /bin/bash <<'EOT'
+                        echo hello world
+                """
+            }
+        }
+
+        stage('Stop Remote EC2-DOMAIN') {
+            steps {
+                echo "Stopping and cleaning Docker on the remote server..."
+                sh """
+                    ssh -i /var/jenkins_home/aws.pem ubuntu@${EC2_DOMAIN_IP} /bin/bash <<'EOT'
+                        echo hello world
+                """
+            }
+        }
+
+        stage('Build Config server Docker Image') {
+            steps {
+                echo "Building Eureka Docker image..."
+                dir("${currentDir}/${CONFIG_SERVER_IMAGE_NAME}") {
+                    sh """
+                        chmod +x gradlew
+                        ./gradlew clean build -x test
+                        docker buildx build --no-cache -t ${CONFIG_SERVER_IMAGE_NAME}:${TAG} .
+                    """
+                }
+            }
+        }
+
 
         stage('Build Eureka Docker Image') {
             steps {
@@ -143,47 +203,86 @@ pipeline {
             }
         }
 
-        stage('Build Frontend Docker Image') {
-            steps {
-                echo "Building Frontend Docker image..."
-                dir("${currentDir}/${FRONTEND_IMAGE_NAME}/${FRONTEND_IMAGE_NAME}") {
-                    sh """
-                        docker buildx build --no-cache --build-arg NEWSPACE_TEST_BACKEND_URL=http://kudong.kr:55021/ -t ${FRONTEND_IMAGE_NAME}:${TAG} .
-                    """
-                }
-            }
-        }
-
-        stage('Build Backend Docker Image') {
+        stage('Build Backend User Docker Image') {
             steps {
                 echo "Building Backend Docker image..."
-                dir("${currentDir}/${BACKEND_IMAGE_NAME}") {
+                dir("${currentDir}/${BACKEND_USER_IMAGE_NAME}") {
                     sh """
                         chmod +x gradlew
                         ./gradlew clean build -x test
-                        docker buildx build -t ${BACKEND_IMAGE_NAME}:${TAG} .
+                        docker buildx build -t ${BACKEND_USER_IMAGE_NAME}:${TAG} .
                     """
                 }
             }
         }
 
+        stage('Build Backend Notice Docker Image') {
+            steps {
+                echo "Building Backend Docker image..."
+                dir("${currentDir}/${BACKEND_NOTICE_IMAGE_NAME}") {
+                    sh """
+                        chmod +x gradlew
+                        ./gradlew clean build -x test
+                        docker buildx build -t ${BACKEND_NOTICE_IMAGE_NAME}:${TAG} .
+                    """
+                }
+            }
+        }
+
+        stage('Build Backend News Docker Image') {
+            steps {
+                echo "Building Backend Docker image..."
+                dir("${currentDir}/${BACKEND_NEWS_IMAGE_NAME}") {
+                    sh """
+                        chmod +x gradlew
+                        ./gradlew clean build -x test
+                        docker buildx build -t ${BACKEND_NEWS_IMAGE_NAME}:${TAG} .
+                    """
+                }
+            }
+        }
 
 
         stage('PUSH Docker Images to AWS Private Registry') {
             steps {
                 sh """
                     aws ecr get-login-password --region us-east-1 | docker login --username AWS --password-stdin 803691999553.dkr.ecr.us-east-1.amazonaws.com
-                    docker tag newspace-frontend:latest 803691999553.dkr.ecr.us-east-1.amazonaws.com/mini-project-9/newspace-frontend:latest
-                    docker push 803691999553.dkr.ecr.us-east-1.amazonaws.com/mini-project-9/newspace-frontend:latest
+                    
+                    docker tag newspace-config-service:latest 803691999553.dkr.ecr.us-east-1.amazonaws.com/mini-project-9/newspace-config-service:latest
+                    docker tag newspace-eureka:latest 803691999553.dkr.ecr.us-east-1.amazonaws.com/mini-project-9/newspace-eureka:latest
+                    docker tag newspace-gateway:latest 803691999553.dkr.ecr.us-east-1.amazonaws.com/mini-project-9/newspace-gateway:latest
+                    docker tag newspace-user-service:latest 803691999553.dkr.ecr.us-east-1.amazonaws.com/mini-project-9/newspace-user-service:latest
+                    docker tag newspace-notice-service:latest 803691999553.dkr.ecr.us-east-1.amazonaws.com/mini-project-9/newspace-notice-service:latest
+                    docker tag newspace-news-service:latest 803691999553.dkr.ecr.us-east-1.amazonaws.com/mini-project-9/newspace-news-service:latest
+
+                    docker push 803691999553.dkr.ecr.us-east-1.amazonaws.com/mini-project-9/newspace-config-service:latest
+                    docker push 803691999553.dkr.ecr.us-east-1.amazonaws.com/mini-project-9/newspace-eureka:latest
+                    docker push 803691999553.dkr.ecr.us-east-1.amazonaws.com/mini-project-9/newspace-gateway:latest
+                    docker push 803691999553.dkr.ecr.us-east-1.amazonaws.com/mini-project-9/newspace-user-service:latest
+                    docker push 803691999553.dkr.ecr.us-east-1.amazonaws.com/mini-project-9/newspace-notice-service:latest
+                    docker push 803691999553.dkr.ecr.us-east-1.amazonaws.com/mini-project-9/newspace-news-service:latest
+
                 """
             }
         }
 
-        // stage('Run Containers on AWS ECS') {
-        //     steps {
-        //         // aws ecs update-service --cluster ${ECS_CLUSTER} --service ${ECS_SERVICE} --task-definition ${ECS_TASK_DEFINITION} --region ${AWS_REGION}
-        //     }
-        // }
+        stage('Run Containers on AWS EC2-1') {
+            steps {
+                
+            }
+        }
+
+        stage('Run Containers on AWS EC2-2') {
+            steps {
+                
+            }
+        }
+
+        stage('Run Containers on AWS EC2-3') {
+            steps {
+                
+            }
+        }
     
     }
 }
