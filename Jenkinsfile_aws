@@ -19,6 +19,10 @@ pipeline {
         TAG = "latest"
         EC2_CONFIG_IP="34.230.80.208"
         EC2_DOMAIN_IP="54.210.26.236"
+        var_name1="USER_SERVICE_STATUS"
+        var_name2="NEWS_SERVICE_STATUS"
+        var_name3="NOTICE_SERVICE_STATUS"
+        new_value="blue"
     }
     stages {
         
@@ -301,13 +305,11 @@ pipeline {
             steps {
                 sh """
                     #!/bin/bash
-                    var_name="USER_SERVICE_STATUS"
-                    new_value="blue"
-                    sed -i "s/^export $var_name=.*/export $var_name=\"$new_value\"/" ~/.bashrc
+                    sed -i "s/^export $var_name1=.*/export $var_name1=\"$new_value\"/" ~/.bashrc
                     var_name="NOTICE_SERVICE_STATUS"
-                    sed -i "s/^export $var_name=.*/export $var_name=\"$new_value\"/" ~/.bashrc
+                    sed -i "s/^export $var_name2=.*/export $var_name2=\"$new_value\"/" ~/.bashrc
                     var_name="NEWS_SERVICE_STATUS"
-                    sed -i "s/^export $var_name=.*/export $var_name=\"$new_value\"/" ~/.bashrc
+                    sed -i "s/^export $var_name3=.*/export $var_name3=\"$new_value\"/" ~/.bashrc
                 """               
             }
         }
