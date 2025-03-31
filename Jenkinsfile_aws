@@ -18,7 +18,6 @@ pipeline {
         DEPLOY_NAME = "newspace-deploy"
         TAG = "latest"
         EC2_CONFIG_IP="34.230.80.208"
-        EC2_EUREKA_IP="3.82.228.233"
         EC2_DOMAIN_IP="54.210.26.236"
     }
     stages {
@@ -267,8 +266,8 @@ pipeline {
             steps {
                 sh """
                     sleep 10;
-                    scp -r -i /var/jenkins_home/aws.pem /var/jenkins_home/docker/ec2-eureka/* ubuntu@${EC2_EUREKA_IP}:/deploy
-                    ssh -i /var/jenkins_home/aws.pem ubuntu@${EC2_EUREKA_IP} /bin/bash <<'EOT'
+                    scp -r -i /var/jenkins_home/aws.pem /var/jenkins_home/docker/ec2-eureka/* ubuntu@${EC2_DOMAIN_IP}:/deploy
+                    ssh -i /var/jenkins_home/aws.pem ubuntu@${EC2_DOMAIN_IP} /bin/bash <<'EOT'
                         aws ecr get-login-password --region us-east-1 | sudo docker login --username AWS --password-stdin 803691999553.dkr.ecr.us-east-1.amazonaws.com
                         docker pull 803691999553.dkr.ecr.us-east-1.amazonaws.com/mini-project-9/newspace-eureka:latest
                         docker pull 803691999553.dkr.ecr.us-east-1.amazonaws.com/mini-project-9/newspace-gateway:latest
@@ -288,6 +287,7 @@ pipeline {
                         docker pull 803691999553.dkr.ecr.us-east-1.amazonaws.com/mini-project-9/newspace-notice-service:latest
                         docker pull 803691999553.dkr.ecr.us-east-1.amazonaws.com/mini-project-9/newspace-news-service:latest 
                         cd /deploy/user
+
                         docker compose -f docker-compose-user-blue.yml up -d 
                         cd /deploy/news
                         docker compose -f docker-compose-news-blue.yml up -d 
