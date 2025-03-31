@@ -11,8 +11,6 @@ source /root/.bashrc
 # USER-SERVICE blue 인지 확인 
 RUNNING_DEPLOY_COLOR=$USER_SERVICE_STATUS
 
-cd $currentDir
-
 chmod +x ./gradlew
 ./gradlew clean build -x test
 docker buildx build --no-cache -t ${service_name}:latest .
