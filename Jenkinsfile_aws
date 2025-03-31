@@ -306,9 +306,7 @@ pipeline {
                 sh """
                     #!/bin/bash
                     sed -i "s/^export $var_name1=.*/export $var_name1=\"$new_value\"/" ~/.bashrc
-                    var_name="NOTICE_SERVICE_STATUS"
                     sed -i "s/^export $var_name2=.*/export $var_name2=\"$new_value\"/" ~/.bashrc
-                    var_name="NEWS_SERVICE_STATUS"
                     sed -i "s/^export $var_name3=.*/export $var_name3=\"$new_value\"/" ~/.bashrc
                 """               
             }
