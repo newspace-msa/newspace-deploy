@@ -25,7 +25,7 @@ echo "RUNNING_DEPLOY_STATUS => ${RUNNING_DEPLOY_COLOR}"
 if [ $RUNNING_DEPLOY_COLOR = "blue" ]
 then
     #기존에 BLUE 가 실행되어 있어 도커 컴포즈 BLUE 실행 
-ssh ${REMOTE_USER}@${REMOTE_HOST} /bin/bash << EOT
+ssh -i /var/jenkins_home/aws.pem ${REMOTE_USER}@${REMOTE_HOST} /bin/bash << EOT
     aws ecr get-login-password --region us-east-1 | docker login --username AWS --password-stdin 803691999553.dkr.ecr.us-east-1.amazonaws.com
     docker pull 803691999553.dkr.ecr.us-east-1.amazonaws.com/mini-project-9/newspace-user-service:latest
     docker compose -f docker-compose-user-green.yml up -d --scale newspace-user-service-green=2
@@ -33,7 +33,7 @@ EOT
     new_service_color="green"
 else
     #기존에 GREEN 가 실행되어 있어 도커 컴포즈 BLUE 실행 
-ssh ${REMOTE_USER}@${REMOTE_HOST} /bin/bash << EOT
+ssh -i /var/jenkins_home/aws.pem ${REMOTE_USER}@${REMOTE_HOST} /bin/bash << EOT
     aws ecr get-login-password --region us-east-1 | docker login --username AWS --password-stdin 803691999553.dkr.ecr.us-east-1.amazonaws.com
     docker pull 803691999553.dkr.ecr.us-east-1.amazonaws.com/mini-project-9/newspace-user-service:latest
     docker compose -f docker-compose-user-blue.yml up -d --scale newspace-user-service-blue=2
@@ -49,9 +49,9 @@ done
 
 #유저 서비스가 살아 있는지 확인 <Remote>
 echo "Find New Service... => ${service_name}-${new_service_color}"
-service_port=$(ssh ${REMOTE_USER}@${REMOTE_HOST} "docker ps -a --filter \"name=${service_name}-${new_service_color}\" --format '{{.Ports}}' | sed 's/.*:\([0-9]*\)->.*/\1/' | head -n 1")
+service_port=$(ssh -i /var/jenkins_home/aws.pem ${REMOTE_USER}@${REMOTE_HOST} "docker ps -a --filter \"name=${service_name}-${new_service_color}\" --format '{{.Ports}}' | sed 's/.*:\([0-9]*\)->.*/\1/' | head -n 1")
 echo "Find Service Port => ${service_port}"
-response=$(ssh ${REMOTE_USER}@${REMOTE_HOST} "curl -s http://localhost:${service_port}/actuator/health")
+response=$(ssh -i /var/jenkins_home/aws.pem ${REMOTE_USER}@${REMOTE_HOST} "curl -s http://localhost:${service_port}/actuator/health")
 echo "Response => ${response}"
 up_count=$(echo $response | grep 'UP' | wc -l)
 
@@ -72,7 +72,7 @@ then
     
     echo "Shut down blue service..."
     #기존 BLUE를 내립니다. <Remote>
-ssh ${REMOTE_USER}@${REMOTE_HOST} /bin/bash << EOT
+ssh -i /var/jenkins_home/aws.pem ${REMOTE_USER}@${REMOTE_HOST} /bin/bash << EOT
     docker compose -f docker-compose-user-blue.yml down
 EOT
 
@@ -83,7 +83,7 @@ else
 
     echo "Shut down green service..."
     #기존 GREEN을 내립니다. <Remote>
-ssh ${REMOTE_USER}@${REMOTE_HOST} /bin/bash << EOT
+ssh -i /var/jenkins_home/aws.pem ${REMOTE_USER}@${REMOTE_HOST} /bin/bash << EOT
     docker compose -f docker-compose-user-green.yml down
 EOT
 
