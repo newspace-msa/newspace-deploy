@@ -296,6 +296,17 @@ pipeline {
                 """               
             }
         }
+
+        stage('Set Blue-Green Environment') {
+            steps {
+                sh """
+                    echo 'export USER_SERVICE_STATUS="blue"' >> ~/.bashrc
+                    echo 'export NOTICE_SERVICE_STATUS="blue"' >> ~/.bashrc
+                    echo 'export NEWS_SERVICE_STATUS="blue"' >> ~/.bashrc
+                    source /root/.bashrc
+                """               
+            }
+        }
     
     }
 }
