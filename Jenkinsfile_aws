@@ -109,7 +109,8 @@ pipeline {
                 echo "Stopping and cleaning Docker on the remote server..."
                 sh """
                     ssh -i /var/jenkins_home/aws.pem ubuntu@${EC2_CONFIG_IP} /bin/bash <<'EOT'
-                        echo hello world
+                        cd /deploy
+                        docker compose down
                 """
             }
         }
@@ -119,7 +120,8 @@ pipeline {
                 echo "Stopping and cleaning Docker on the remote server..."
                 sh """
                     ssh -i /var/jenkins_home/aws.pem ubuntu@${EC2_EUREKA_IP} /bin/bash <<'EOT'
-                        echo hello world
+                        cd /deploy
+                        docker compose down
                 """
             }
         }
@@ -237,23 +239,42 @@ pipeline {
             }
         }
 
-        // stage('Run Containers on AWS EC2-1') {
-        //     steps {
-                
-        //     }
-        // }
+        stage('Run Containers on AWS EC2-CONFIG/RABBITMQ') {
+            steps {
+                sh """
+                    scp -i /var/jenkins_home/aws.pem /var/jenkins_home/docker/ec2-config ubuntu@${EC2_CONFIG_IP}:/deploy
+                    ssh -i /var/jenkins_home/aws.pem ubuntu@${EC2_CONFIG_IP} /bin/bash <<'EOT'
+                        cd /deploy
+                        docker compose up -d
+                """         
+            }
+        }
 
-        // stage('Run Containers on AWS EC2-2') {
-        //     steps {
-                
-        //     }
-        // }
+        stage('Run Containers on EC2-EUREKA/APIGATEWAY') {
+            steps {
+                sh """
+                    scp -i /var/jenkins_home/aws.pem /var/jenkins_home/docker/ec2-eureka ubuntu@${EC2_EUREKA_IP}:/deploy
+                    ssh -i /var/jenkins_home/aws.pem ubuntu@${EC2_EUREKA_IP} /bin/bash <<'EOT'
+                        cd /deploy
+                        docker compose up -d
+                """
+            }
+        }
 
-        // stage('Run Containers on AWS EC2-3') {
-        //     steps {
-                
-        //     }
-        // }
+        stage('Run Containers on EC2-DOMAIN') {
+            steps {
+                sh """
+                    scp -i /var/jenkins_home/aws.pem /var/jenkins_home/docker/ec2-domain ubuntu@${EC2_EUREKA_IP}:/deploy
+                    ssh -i /var/jenkins_home/aws.pem ubuntu@${EC2_DOMAIN_IP} /bin/bash <<'EOT'
+                        cd /deploy/user
+                        docker compose -f docker-compose-user-blue.yml up -d --scale newspace-user-service-blue=2
+                        cd /deploy/news
+                        docker compose -f docker-compose-news-blue.yml up -d --scale newspace-news-service-blue=2
+                        cd /deploy/notice
+                        docker compose -f docker-compose-notice-blue.yml up -d --scale newspace-notice-service-blue=2
+                """               
+            }
+        }
     
     }
 }
