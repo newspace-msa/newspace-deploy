@@ -265,13 +265,7 @@ pipeline {
         stage('Run Containers on EC2-EUREKA/APIGATEWAY') {
             steps {
                 sh """
-                    server_starting_wait_time=10
-                    for sec in $(eval echo {1..${server_starting_wait_time}})
-                    do
-                    echo Wait Server Starting.... $(expr ${server_starting_wait_time} + 1 - ${sec}) Seconds .....
-                    sleep 1;
-                    done
-
+                    sleep 10;
                     scp -r -i /var/jenkins_home/aws.pem /var/jenkins_home/docker/ec2-eureka/* ubuntu@${EC2_EUREKA_IP}:/deploy
                     ssh -i /var/jenkins_home/aws.pem ubuntu@${EC2_EUREKA_IP} /bin/bash <<'EOT'
                         aws ecr get-login-password --region us-east-1 | docker login --username AWS --password-stdin 803691999553.dkr.ecr.us-east-1.amazonaws.com
