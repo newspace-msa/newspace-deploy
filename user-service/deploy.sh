@@ -11,9 +11,13 @@ source /root/.bashrc
 # USER-SERVICE blue 인지 확인 
 RUNNING_DEPLOY_COLOR=$USER_SERVICE_STATUS
 
-chmod +x gradlew
+echo $currentDir
+
+chmod +x ./gradlew
 ./gradlew clean build -x test
 docker buildx build --no-cache -t ${service_name}:latest .
+
+exit 1
 
 #AWS 오류시 Jenkins 에서 aws configure를 수행했는지 확인
 aws ecr get-login-password --region us-east-1 | docker login --username AWS --password-stdin 803691999553.dkr.ecr.us-east-1.amazonaws.com
