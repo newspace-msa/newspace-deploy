@@ -269,7 +269,7 @@ pipeline {
         stage('Run Containers on EC2-EUREKA/APIGATEWAY') {
             steps {
                 sh """
-                    sleep 10;
+                    sleep 20;
                     scp -r -i /var/jenkins_home/aws.pem /var/jenkins_home/docker/* ubuntu@${EC2_DOMAIN_IP}:/deploy
                     ssh -i /var/jenkins_home/aws.pem ubuntu@${EC2_DOMAIN_IP} /bin/bash <<'EOT'
                         aws ecr get-login-password --region us-east-1 | sudo docker login --username AWS --password-stdin 803691999553.dkr.ecr.us-east-1.amazonaws.com
