@@ -132,121 +132,123 @@ pipeline {
 
         stage('Stop Remote EC2-DOMAIN') {
             steps {
-                echo "Stopping and cleaning Docker on the remote server..."
-                sh """
-                    ssh -i /var/jenkins_home/aws.pem ubuntu@${EC2_DOMAIN_IP} /bin/bash <<'EOT'
-                        echo hello world
-                """
-            }
-        }
-
-        stage('Build Config server Docker Image') {
-            steps {
-                echo "Building Eureka Docker image..."
-                dir("${currentDir}/${CONFIG_SERVER_IMAGE_NAME}") {
+                catchError(buildResult: 'SUCCESS', stageResult: 'FAILURE') {
+                    echo "Stopping and cleaning Docker on the remote server..."
                     sh """
-                        chmod +x gradlew
-                        ./gradlew clean build -x test
-                        docker buildx build --no-cache -t ${CONFIG_SERVER_IMAGE_NAME}:${TAG} .
+                        ssh -i /var/jenkins_home/aws.pem ubuntu@${EC2_DOMAIN_IP} /bin/bash <<'EOT'
+                            echo hello world
                     """
                 }
             }
         }
 
-
-        stage('Build Eureka Docker Image') {
-            steps {
-                echo "Building Eureka Docker image..."
-                dir("${currentDir}/${EUREKA_IMAGE_NAME}") {
-                    sh """
-                        chmod +x gradlew
-                        ./gradlew clean build -x test
-                        docker buildx build --no-cache -t ${EUREKA_IMAGE_NAME}:${TAG} .
-                    """
-                }
-            }
-        }
-
-        stage('Build Gateway Docker Image') {
-            steps {
-                echo "Building Gateway Docker image..."
-                dir("${currentDir}/${GATEWAY_IMAGE_NAME}") {
-                    sh """
-                        chmod +x gradlew
-                        ./gradlew clean build -x test
-                        docker buildx build --no-cache -t ${GATEWAY_IMAGE_NAME}:${TAG} .
-                    """
-                }
-            }
-        }
-
-        stage('Build Backend User Docker Image') {
-            steps {
-                echo "Building Backend Docker image..."
-                dir("${currentDir}/${BACKEND_USER_IMAGE_NAME}") {
-                    sh """
-                        chmod +x gradlew
-                        ./gradlew clean build -x test
-                        docker buildx build -t ${BACKEND_USER_IMAGE_NAME}:${TAG} .
-                    """
-                }
-            }
-        }
-
-        stage('Build Backend Notice Docker Image') {
-            steps {
-                echo "Building Backend Docker image..."
-                dir("${currentDir}/${BACKEND_NOTICE_IMAGE_NAME}") {
-                    sh """
-                        chmod +x gradlew
-                        ./gradlew clean build -x test
-                        docker buildx build -t ${BACKEND_NOTICE_IMAGE_NAME}:${TAG} .
-                    """
-                }
-            }
-        }
-
-        stage('Build Backend News Docker Image') {
-            steps {
-                echo "Building Backend Docker image..."
-                dir("${currentDir}/${BACKEND_NEWS_IMAGE_NAME}") {
-                    sh """
-                        chmod +x gradlew
-                        ./gradlew clean build -x test
-                        docker buildx build -t ${BACKEND_NEWS_IMAGE_NAME}:${TAG} .
-                    """
-                }
-            }
-        }
+        // stage('Build Config server Docker Image') {
+        //     steps {
+        //         echo "Building Eureka Docker image..."
+        //         dir("${currentDir}/${CONFIG_SERVER_IMAGE_NAME}") {
+        //             sh """
+        //                 chmod +x gradlew
+        //                 ./gradlew clean build -x test
+        //                 docker buildx build --no-cache -t ${CONFIG_SERVER_IMAGE_NAME}:${TAG} .
+        //             """
+        //         }
+        //     }
+        // }
 
 
-        stage('PUSH Docker Images to AWS Private Registry') {
-            steps {
-                sh """
-                    aws ecr get-login-password --region us-east-1 | docker login --username AWS --password-stdin 803691999553.dkr.ecr.us-east-1.amazonaws.com
+        // stage('Build Eureka Docker Image') {
+        //     steps {
+        //         echo "Building Eureka Docker image..."
+        //         dir("${currentDir}/${EUREKA_IMAGE_NAME}") {
+        //             sh """
+        //                 chmod +x gradlew
+        //                 ./gradlew clean build -x test
+        //                 docker buildx build --no-cache -t ${EUREKA_IMAGE_NAME}:${TAG} .
+        //             """
+        //         }
+        //     }
+        // }
+
+        // stage('Build Gateway Docker Image') {
+        //     steps {
+        //         echo "Building Gateway Docker image..."
+        //         dir("${currentDir}/${GATEWAY_IMAGE_NAME}") {
+        //             sh """
+        //                 chmod +x gradlew
+        //                 ./gradlew clean build -x test
+        //                 docker buildx build --no-cache -t ${GATEWAY_IMAGE_NAME}:${TAG} .
+        //             """
+        //         }
+        //     }
+        // }
+
+        // stage('Build Backend User Docker Image') {
+        //     steps {
+        //         echo "Building Backend Docker image..."
+        //         dir("${currentDir}/${BACKEND_USER_IMAGE_NAME}") {
+        //             sh """
+        //                 chmod +x gradlew
+        //                 ./gradlew clean build -x test
+        //                 docker buildx build -t ${BACKEND_USER_IMAGE_NAME}:${TAG} .
+        //             """
+        //         }
+        //     }
+        // }
+
+        // stage('Build Backend Notice Docker Image') {
+        //     steps {
+        //         echo "Building Backend Docker image..."
+        //         dir("${currentDir}/${BACKEND_NOTICE_IMAGE_NAME}") {
+        //             sh """
+        //                 chmod +x gradlew
+        //                 ./gradlew clean build -x test
+        //                 docker buildx build -t ${BACKEND_NOTICE_IMAGE_NAME}:${TAG} .
+        //             """
+        //         }
+        //     }
+        // }
+
+        // stage('Build Backend News Docker Image') {
+        //     steps {
+        //         echo "Building Backend Docker image..."
+        //         dir("${currentDir}/${BACKEND_NEWS_IMAGE_NAME}") {
+        //             sh """
+        //                 chmod +x gradlew
+        //                 ./gradlew clean build -x test
+        //                 docker buildx build -t ${BACKEND_NEWS_IMAGE_NAME}:${TAG} .
+        //             """
+        //         }
+        //     }
+        // }
+
+
+        // stage('PUSH Docker Images to AWS Private Registry') {
+        //     steps {
+        //         sh """
+        //             aws ecr get-login-password --region us-east-1 | docker login --username AWS --password-stdin 803691999553.dkr.ecr.us-east-1.amazonaws.com
                     
-                    docker tag newspace-config-service:latest 803691999553.dkr.ecr.us-east-1.amazonaws.com/mini-project-9/newspace-config-service:latest
-                    docker tag newspace-eureka:latest 803691999553.dkr.ecr.us-east-1.amazonaws.com/mini-project-9/newspace-eureka:latest
-                    docker tag newspace-gateway:latest 803691999553.dkr.ecr.us-east-1.amazonaws.com/mini-project-9/newspace-gateway:latest
-                    docker tag newspace-user-service:latest 803691999553.dkr.ecr.us-east-1.amazonaws.com/mini-project-9/newspace-user-service:latest
-                    docker tag newspace-notice-service:latest 803691999553.dkr.ecr.us-east-1.amazonaws.com/mini-project-9/newspace-notice-service:latest
-                    docker tag newspace-news-service:latest 803691999553.dkr.ecr.us-east-1.amazonaws.com/mini-project-9/newspace-news-service:latest
+        //             docker tag newspace-config-service:latest 803691999553.dkr.ecr.us-east-1.amazonaws.com/mini-project-9/newspace-config-service:latest
+        //             docker tag newspace-eureka:latest 803691999553.dkr.ecr.us-east-1.amazonaws.com/mini-project-9/newspace-eureka:latest
+        //             docker tag newspace-gateway:latest 803691999553.dkr.ecr.us-east-1.amazonaws.com/mini-project-9/newspace-gateway:latest
+        //             docker tag newspace-user-service:latest 803691999553.dkr.ecr.us-east-1.amazonaws.com/mini-project-9/newspace-user-service:latest
+        //             docker tag newspace-notice-service:latest 803691999553.dkr.ecr.us-east-1.amazonaws.com/mini-project-9/newspace-notice-service:latest
+        //             docker tag newspace-news-service:latest 803691999553.dkr.ecr.us-east-1.amazonaws.com/mini-project-9/newspace-news-service:latest
 
-                    docker push 803691999553.dkr.ecr.us-east-1.amazonaws.com/mini-project-9/newspace-config-service:latest
-                    docker push 803691999553.dkr.ecr.us-east-1.amazonaws.com/mini-project-9/newspace-eureka:latest
-                    docker push 803691999553.dkr.ecr.us-east-1.amazonaws.com/mini-project-9/newspace-gateway:latest
-                    docker push 803691999553.dkr.ecr.us-east-1.amazonaws.com/mini-project-9/newspace-user-service:latest
-                    docker push 803691999553.dkr.ecr.us-east-1.amazonaws.com/mini-project-9/newspace-notice-service:latest
-                    docker push 803691999553.dkr.ecr.us-east-1.amazonaws.com/mini-project-9/newspace-news-service:latest
+        //             docker push 803691999553.dkr.ecr.us-east-1.amazonaws.com/mini-project-9/newspace-config-service:latest
+        //             docker push 803691999553.dkr.ecr.us-east-1.amazonaws.com/mini-project-9/newspace-eureka:latest
+        //             docker push 803691999553.dkr.ecr.us-east-1.amazonaws.com/mini-project-9/newspace-gateway:latest
+        //             docker push 803691999553.dkr.ecr.us-east-1.amazonaws.com/mini-project-9/newspace-user-service:latest
+        //             docker push 803691999553.dkr.ecr.us-east-1.amazonaws.com/mini-project-9/newspace-notice-service:latest
+        //             docker push 803691999553.dkr.ecr.us-east-1.amazonaws.com/mini-project-9/newspace-news-service:latest
 
-                """
-            }
-        }
+        //         """
+        //     }
+        // }
 
         stage('Run Containers on AWS EC2-CONFIG/RABBITMQ') {
             steps {
                 sh """
-                    scp -i /var/jenkins_home/aws.pem /var/jenkins_home/docker/ec2-config ubuntu@${EC2_CONFIG_IP}:/deploy
+                    scp -r -i /var/jenkins_home/aws.pem /var/jenkins_home/docker/ec2-config ubuntu@${EC2_CONFIG_IP}:/deploy
                     ssh -i /var/jenkins_home/aws.pem ubuntu@${EC2_CONFIG_IP} /bin/bash <<'EOT'
                         cd /deploy
                         docker compose up -d
@@ -257,7 +259,7 @@ pipeline {
         stage('Run Containers on EC2-EUREKA/APIGATEWAY') {
             steps {
                 sh """
-                    scp -i /var/jenkins_home/aws.pem /var/jenkins_home/docker/ec2-eureka ubuntu@${EC2_EUREKA_IP}:/deploy
+                    scp -r -i /var/jenkins_home/aws.pem /var/jenkins_home/docker/ec2-eureka ubuntu@${EC2_EUREKA_IP}:/deploy
                     ssh -i /var/jenkins_home/aws.pem ubuntu@${EC2_EUREKA_IP} /bin/bash <<'EOT'
                         cd /deploy
                         docker compose up -d
@@ -268,7 +270,7 @@ pipeline {
         stage('Run Containers on EC2-DOMAIN') {
             steps {
                 sh """
-                    scp -i /var/jenkins_home/aws.pem /var/jenkins_home/docker/ec2-domain ubuntu@${EC2_EUREKA_IP}:/deploy
+                    scp -r -i /var/jenkins_home/aws.pem /var/jenkins_home/docker/ec2-domain ubuntu@${EC2_EUREKA_IP}:/deploy
                     ssh -i /var/jenkins_home/aws.pem ubuntu@${EC2_DOMAIN_IP} /bin/bash <<'EOT'
                         cd /deploy/user
                         docker compose -f docker-compose-user-blue.yml up -d --scale newspace-user-service-blue=2
