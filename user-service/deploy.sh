@@ -69,7 +69,12 @@ fi
 if [ $RUNNING_DEPLOY_COLOR = "blue" ]
 then
     #Config 서버의 환경변수를 변경합니다. <Jenkins>
-    echo 'export USER_SERVICE_STATUS="green"' >> ~/.bashrc
+    # echo 'export USER_SERVICE_STATUS="green"' >> ~/.bashrc
+
+    var_name="USER_SERVICE_STATUS"
+    new_value="green"
+    # .bashrc 파일에서 변수 변경
+    sed -i "s/^export $var_name=.*/export $var_name=\"$new_value\"/" ~/.bashrc
     source /root/.bashrc
     
     echo "Shut down blue service..."
@@ -81,7 +86,13 @@ EOT
 
 else
     #Config 서버의 환경변수를 변경합니다. <Jenkins>
-    echo 'export USER_SERVICE_STATUS="blue"' >> ~/.bashrc
+    # echo 'export USER_SERVICE_STATUS="blue"' >> ~/.bashrc
+
+    var_name="USER_SERVICE_STATUS"
+    new_value="blue"
+    # .bashrc 파일에서 변수 변경
+    sed -i "s/^export $var_name=.*/export $var_name=\"$new_value\"/" ~/.bashrc
+
     source /root/.bashrc
 
     echo "Shut down green service..."
