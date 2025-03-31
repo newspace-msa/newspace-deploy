@@ -250,7 +250,7 @@ pipeline {
                 sh """
                     scp -r -i /var/jenkins_home/aws.pem /var/jenkins_home/docker/ec2-config ubuntu@${EC2_CONFIG_IP}:/deploy
                     ssh -i /var/jenkins_home/aws.pem ubuntu@${EC2_CONFIG_IP} /bin/bash <<'EOT'
-                        cd /deploy
+                        cd /deploy/ec2-config
                         docker compose up -d
                 """         
             }
@@ -261,7 +261,7 @@ pipeline {
                 sh """
                     scp -r -i /var/jenkins_home/aws.pem /var/jenkins_home/docker/ec2-eureka ubuntu@${EC2_EUREKA_IP}:/deploy
                     ssh -i /var/jenkins_home/aws.pem ubuntu@${EC2_EUREKA_IP} /bin/bash <<'EOT'
-                        cd /deploy
+                        cd /deploy/ec2-eureka
                         docker compose up -d
                 """
             }
@@ -272,11 +272,11 @@ pipeline {
                 sh """
                     scp -r -i /var/jenkins_home/aws.pem /var/jenkins_home/docker/ec2-domain ubuntu@${EC2_EUREKA_IP}:/deploy
                     ssh -i /var/jenkins_home/aws.pem ubuntu@${EC2_DOMAIN_IP} /bin/bash <<'EOT'
-                        cd /deploy/user
+                        cd /deploy/ec2-domain/user
                         docker compose -f docker-compose-user-blue.yml up -d --scale newspace-user-service-blue=2
-                        cd /deploy/news
+                        cd /deploy/ec2-domain/news
                         docker compose -f docker-compose-news-blue.yml up -d --scale newspace-news-service-blue=2
-                        cd /deploy/notice
+                        cd /deploy/ec2-domain/notice
                         docker compose -f docker-compose-notice-blue.yml up -d --scale newspace-notice-service-blue=2
                 """               
             }
