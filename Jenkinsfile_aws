@@ -300,6 +300,7 @@ pipeline {
         stage('Set Blue-Green Environment') {
             steps {
                 sh """
+                    #!/bin/bash
                     echo 'export USER_SERVICE_STATUS="blue"' >> ~/.bashrc
                     echo 'export NOTICE_SERVICE_STATUS="blue"' >> ~/.bashrc
                     echo 'export NEWS_SERVICE_STATUS="blue"' >> ~/.bashrc
