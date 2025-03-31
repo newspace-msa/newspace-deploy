@@ -136,7 +136,12 @@ pipeline {
                     echo "Stopping and cleaning Docker on the remote server..."
                     sh """
                         ssh -i /var/jenkins_home/aws.pem ubuntu@${EC2_DOMAIN_IP} /bin/bash <<'EOT'
-                            echo hello world
+                            cd /deploy/ec2-domain/user
+                            docker compose -f docker-compose-user-blue.yml down
+                            cd /deploy/ec2-domain/news
+                            docker compose -f docker-compose-news-blue.yml down
+                            cd /deploy/ec2-domain/notice
+                            docker compose -f docker-compose-notice-blue.yml down
                     """
                 }
             }
