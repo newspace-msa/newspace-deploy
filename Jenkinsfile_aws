@@ -106,23 +106,27 @@ pipeline {
 
         stage('Stop Remote EC2-CONFIG/RABBITMQ') {
             steps {
-                echo "Stopping and cleaning Docker on the remote server..."
-                sh """
-                    ssh -i /var/jenkins_home/aws.pem ubuntu@${EC2_CONFIG_IP} /bin/bash <<'EOT'
-                        cd /deploy
-                        docker compose down
-                """
+                catchError(buildResult: 'SUCCESS', stageResult: 'FAILURE') {
+                    echo "Stopping and cleaning Docker on the remote server..."
+                    sh """
+                        ssh -i /var/jenkins_home/aws.pem ubuntu@${EC2_CONFIG_IP} /bin/bash <<'EOT'
+                            cd /deploy
+                            docker compose down
+                    """
+                }
             }
         }
 
         stage('Stop Remote EC2-EUREKA/APIGATEWAY') {
             steps {
-                echo "Stopping and cleaning Docker on the remote server..."
-                sh """
-                    ssh -i /var/jenkins_home/aws.pem ubuntu@${EC2_EUREKA_IP} /bin/bash <<'EOT'
-                        cd /deploy
-                        docker compose down
-                """
+                catchError(buildResult: 'SUCCESS', stageResult: 'FAILURE') {
+                    echo "Stopping and cleaning Docker on the remote server..."
+                    sh """
+                        ssh -i /var/jenkins_home/aws.pem ubuntu@${EC2_EUREKA_IP} /bin/bash <<'EOT'
+                            cd /deploy
+                            docker compose down
+                    """
+                }
             }
         }
 
