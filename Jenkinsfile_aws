@@ -243,23 +243,23 @@ pipeline {
             }
         }
 
-        stage('Run Containers on AWS EC2-1') {
-            steps {
+        // stage('Run Containers on AWS EC2-1') {
+        //     steps {
                 
-            }
-        }
+        //     }
+        // }
 
-        stage('Run Containers on AWS EC2-2') {
-            steps {
+        // stage('Run Containers on AWS EC2-2') {
+        //     steps {
                 
-            }
-        }
+        //     }
+        // }
 
-        stage('Run Containers on AWS EC2-3') {
-            steps {
+        // stage('Run Containers on AWS EC2-3') {
+        //     steps {
                 
-            }
-        }
+        //     }
+        // }
     
     }
 }
