@@ -6,7 +6,6 @@ pipeline {
         remoteIP = "172.21.1.22"
         remoteBaseDir = "/home/lgcns/docker"
         mountDir = "${currentDir}/mount"
-        server_starting_wait_time = 10
         separationPhrase = "====================================="
         DOCKER_NICKNAME = "kudong"
         CONFIG_SERVER_IMAGE_NAME = "newspace-config-service"
@@ -266,6 +265,7 @@ pipeline {
         stage('Run Containers on EC2-EUREKA/APIGATEWAY') {
             steps {
                 sh """
+                    server_starting_wait_time=10
                     for sec in $(eval echo {1..$server_starting_wait_time})
                     do
                     echo Wait Server Starting.... $(expr ${server_starting_wait_time} + 1 - ${sec}) Seconds .....
