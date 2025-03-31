@@ -255,8 +255,8 @@ pipeline {
                 sh """
                     scp -r -i /var/jenkins_home/aws.pem /var/jenkins_home/docker/ec2-config/* ubuntu@${EC2_CONFIG_IP}:/deploy
                     ssh -i /var/jenkins_home/aws.pem ubuntu@${EC2_CONFIG_IP} /bin/bash <<'EOT'
-                        aws ecr get-login-password --region us-east-1 | docker login --username AWS --password-stdin 803691999553.dkr.ecr.us-east-1.amazonaws.com
-                        cd /deploy/ec2-config
+                        aws ecr get-login-password --region us-east-1 | sudo docker login --username AWS --password-stdin 803691999553.dkr.ecr.us-east-1.amazonaws.com
+                        cd /deploy
                         docker compose up -d
                 """         
             }
@@ -268,8 +268,8 @@ pipeline {
                     sleep 10;
                     scp -r -i /var/jenkins_home/aws.pem /var/jenkins_home/docker/ec2-eureka/* ubuntu@${EC2_EUREKA_IP}:/deploy
                     ssh -i /var/jenkins_home/aws.pem ubuntu@${EC2_EUREKA_IP} /bin/bash <<'EOT'
-                        aws ecr get-login-password --region us-east-1 | docker login --username AWS --password-stdin 803691999553.dkr.ecr.us-east-1.amazonaws.com
-                        cd /deploy/ec2-eureka
+                        aws ecr get-login-password --region us-east-1 | sudo docker login --username AWS --password-stdin 803691999553.dkr.ecr.us-east-1.amazonaws.com
+                        cd /deploy
                         docker compose up -d
                 """
             }
@@ -280,7 +280,7 @@ pipeline {
                 sh """
                     scp -r -i /var/jenkins_home/aws.pem /var/jenkins_home/docker/ec2-domain/* ubuntu@${EC2_DOMAIN_IP}:/deploy
                     ssh -i /var/jenkins_home/aws.pem ubuntu@${EC2_DOMAIN_IP} /bin/bash <<'EOT'
-                        aws ecr get-login-password --region us-east-1 | docker login --username AWS --password-stdin 803691999553.dkr.ecr.us-east-1.amazonaws.com
+                        aws ecr get-login-password --region us-east-1 | sudo docker login --username AWS --password-stdin 803691999553.dkr.ecr.us-east-1.amazonaws.com
                         cd /deploy/user
                         docker compose -f docker-compose-user-blue.yml up -d --scale newspace-user-service-blue=2
                         cd /deploy/news
