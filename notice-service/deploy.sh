@@ -1,4 +1,12 @@
 #!/bin/bash
+
+echo "######################################"
+echo "#                                    #"
+echo "#      NEWSPACE-NOTICE-SERVICE       #"
+echo "#    Blue-Green 무중단 배포 스크립트    #"
+echo "#                                    #"
+echo "######################################"
+
 currentDir=$(pwd -P);
 server_starting_wait_time=50
 service_name="newspace-notice-service"

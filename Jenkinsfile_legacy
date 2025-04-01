@@ -1,3 +1,11 @@
+// ######################################
+// #                                    #
+// #        Jenkinsfile_legacy          #
+// #   NEWSPACE-MSA 홈서버용 파이프라인    #
+// #          - KUDONG.KR -             #
+// #                                    #
+// ######################################
+
 pipeline {
     agent any
     environment {

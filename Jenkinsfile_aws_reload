@@ -1,3 +1,10 @@
+// ######################################
+// #                                    #
+// #      Jenkinsfile_aws_reload        #
+// #  NEWSPACE-MSA 통합 재부팅 파이프라인  #
+// #                                    #
+// ######################################
+
 pipeline {
     agent any
     environment {
@@ -65,7 +72,7 @@ pipeline {
 
         stage('Stop Remote EC2-CONFIG/RABBITMQ') {
             steps {
-                catchError(buildResult: 'SUCCESS', stageResult: 'FAILURE') {
+                catchError(buildResult: 'SUCCESS', stageResult: 'SUCCESS') {
                     echo "Stopping and cleaning Docker on the remote server..."
                     sh """
                         ssh -i /var/jenkins_home/aws.pem ubuntu@${EC2_CONFIG_IP} /bin/bash <<'EOT'
@@ -78,7 +85,7 @@ pipeline {
 
         stage('Stop Remote EC2-EUREKA/APIGATEWAY') {
             steps {
-                catchError(buildResult: 'SUCCESS', stageResult: 'FAILURE') {
+                catchError(buildResult: 'SUCCESS', stageResult: 'SUCCESS') {
                     echo "Stopping and cleaning Docker on the remote server..."
                     sh """
                         ssh -i /var/jenkins_home/aws.pem ubuntu@${EC2_DOMAIN_IP} /bin/bash <<'EOT'
@@ -91,16 +98,19 @@ pipeline {
 
         stage('Stop Remote EC2-DOMAIN') {
             steps {
-                catchError(buildResult: 'SUCCESS', stageResult: 'FAILURE') {
+                catchError(buildResult: 'SUCCESS', stageResult: 'SUCCESS') {
                     echo "Stopping and cleaning Docker on the remote server..."
                     sh """
                         ssh -i /var/jenkins_home/aws.pem ubuntu@${EC2_DOMAIN_IP} /bin/bash <<'EOT'
                             cd /deploy/ec2-domain/user
                             docker compose -f docker-compose-user-blue.yml down
+                            docker compose -f docker-compose-user-green.yml down
                             cd /deploy/ec2-domain/news
                             docker compose -f docker-compose-news-blue.yml down
+                            docker compose -f docker-compose-news-green.yml down
                             cd /deploy/ec2-domain/notice
                             docker compose -f docker-compose-notice-blue.yml down
+                            docker compose -f docker-compose-notice-green.yml down
                     """
                 }
             }
