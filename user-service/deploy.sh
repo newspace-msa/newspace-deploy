@@ -28,7 +28,7 @@ then
 ssh -i /var/jenkins_home/aws.pem ${REMOTE_USER}@${REMOTE_HOST} /bin/bash << EOT
     aws ecr get-login-password --region us-east-1 | docker login --username AWS --password-stdin 803691999553.dkr.ecr.us-east-1.amazonaws.com
     docker pull 803691999553.dkr.ecr.us-east-1.amazonaws.com/mini-project-9/newspace-user-service:latest
-    cd /deploy/user
+    cd /deploy/ec2-domain/user
     docker compose -f docker-compose-user-green.yml up -d 
 EOT
     new_service_color="green"
@@ -37,7 +37,7 @@ else
 ssh -i /var/jenkins_home/aws.pem ${REMOTE_USER}@${REMOTE_HOST} /bin/bash << EOT
     aws ecr get-login-password --region us-east-1 | docker login --username AWS --password-stdin 803691999553.dkr.ecr.us-east-1.amazonaws.com
     docker pull 803691999553.dkr.ecr.us-east-1.amazonaws.com/mini-project-9/newspace-user-service:latest
-    cd /deploy/user
+    cd /deploy/ec2-domain/user
     docker compose -f docker-compose-user-blue.yml up -d 
 EOT
     new_service_color="blue"
@@ -80,7 +80,7 @@ then
     echo "Shut down blue service..."
     #기존 BLUE를 내립니다. <Remote>
 ssh -i /var/jenkins_home/aws.pem ${REMOTE_USER}@${REMOTE_HOST} /bin/bash << EOT
-    cd /deploy/user
+    cd /deploy/ec2-domain/user
     docker compose -f docker-compose-user-blue.yml down
 EOT
 
@@ -98,7 +98,7 @@ else
     echo "Shut down green service..."
     #기존 GREEN을 내립니다. <Remote>
 ssh -i /var/jenkins_home/aws.pem ${REMOTE_USER}@${REMOTE_HOST} /bin/bash << EOT
-    cd /deploy/user
+    cd /deploy/ec2-domain/user
     docker compose -f docker-compose-user-green.yml down
 EOT
 

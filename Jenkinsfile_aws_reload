@@ -1,0 +1,158 @@
+pipeline {
+    agent any
+    environment {
+        currentDir = pwd()
+        remoteID = "lgcns"
+        remoteIP = "172.21.1.22"
+        remoteBaseDir = "/home/lgcns/docker"
+        mountDir = "${currentDir}/mount"
+        separationPhrase = "====================================="
+        DOCKER_NICKNAME = "kudong"
+        CONFIG_SERVER_IMAGE_NAME = "newspace-config-service"
+        BACKEND_USER_IMAGE_NAME = "newspace-user-service"
+        BACKEND_NOTICE_IMAGE_NAME = "newspace-notice-service"
+        BACKEND_NEWS_IMAGE_NAME = "newspace-news-service"
+        FRONTEND_IMAGE_NAME = "newspace-frontend"
+        EUREKA_IMAGE_NAME = "newspace-eureka"
+        GATEWAY_IMAGE_NAME = "newspace-gateway"
+        DEPLOY_NAME = "newspace-deploy"
+        TAG = "latest"
+        EC2_CONFIG_IP="3.80.182.13"
+        EC2_DOMAIN_IP="54.210.46.170"
+        var_name1="USER_SERVICE_STATUS"
+        var_name2="NEWS_SERVICE_STATUS"
+        var_name3="NOTICE_SERVICE_STATUS"
+        new_value="blue"
+    }
+    stages {
+        
+        stage('Clean Workspace And Docker Images') {
+            steps {
+                script {
+                    deleteDir()  // 워크스페이스 정리
+                    echo 'Workspace and Docker Images cleaned'
+                    sh """
+                        docker image prune -f
+                        docker builder prune -a -f
+                        echo "Docker images after cleanup:"
+                        docker images -a
+                    """
+                }
+            }
+        }
+        
+        stage('Initial Setup') {
+            steps {
+                script {
+                    echo "${separationPhrase}"
+                    echo "Newspace Deploy Process Start......"
+                    echo "${separationPhrase}"
+                    echo "currentDir = ${currentDir}"
+                    echo "mountDir = ${mountDir}"
+                    echo "remoteID = ${remoteID}"
+                    echo "remoteIP = ${remoteIP}"
+                    echo "DOCKER_NICKNAME = ${DOCKER_NICKNAME}"
+                    echo "CONFIG_SERVER_IMAGE_NAME = ${CONFIG_SERVER_IMAGE_NAME}"
+                    echo "BACKEND_USER_IMAGE_NAME = ${BACKEND_USER_IMAGE_NAME}"
+                    echo "BACKEND_NOTICE_IMAGE_NAME = ${BACKEND_NOTICE_IMAGE_NAME}"
+                    echo "BACKEND_NEWS_IMAGE_NAME = ${BACKEND_NEWS_IMAGE_NAME}"
+                    echo "DEPLOY_NAME = ${DEPLOY_NAME}"
+                    echo "TAG = ${TAG}"
+                    echo "${separationPhrase}"
+                }
+            }
+        }
+
+        stage('Stop Remote EC2-CONFIG/RABBITMQ') {
+            steps {
+                catchError(buildResult: 'SUCCESS', stageResult: 'FAILURE') {
+                    echo "Stopping and cleaning Docker on the remote server..."
+                    sh """
+                        ssh -i /var/jenkins_home/aws.pem ubuntu@${EC2_CONFIG_IP} /bin/bash <<'EOT'
+                            cd /deploy
+                            docker compose down
+                    """
+                }
+            }
+        }
+
+        stage('Stop Remote EC2-EUREKA/APIGATEWAY') {
+            steps {
+                catchError(buildResult: 'SUCCESS', stageResult: 'FAILURE') {
+                    echo "Stopping and cleaning Docker on the remote server..."
+                    sh """
+                        ssh -i /var/jenkins_home/aws.pem ubuntu@${EC2_DOMAIN_IP} /bin/bash <<'EOT'
+                            cd /deploy/ec2-eureka
+                            docker compose down
+                    """
+                }
+            }
+        }
+
+        stage('Stop Remote EC2-DOMAIN') {
+            steps {
+                catchError(buildResult: 'SUCCESS', stageResult: 'FAILURE') {
+                    echo "Stopping and cleaning Docker on the remote server..."
+                    sh """
+                        ssh -i /var/jenkins_home/aws.pem ubuntu@${EC2_DOMAIN_IP} /bin/bash <<'EOT'
+                            cd /deploy/ec2-domain/user
+                            docker compose -f docker-compose-user-blue.yml down
+                            cd /deploy/ec2-domain/news
+                            docker compose -f docker-compose-news-blue.yml down
+                            cd /deploy/ec2-domain/notice
+                            docker compose -f docker-compose-notice-blue.yml down
+                    """
+                }
+            }
+        }
+
+        stage('Run Containers on AWS EC2-CONFIG/RABBITMQ') {
+            steps {
+                sh """
+                    scp -r -i /var/jenkins_home/aws.pem /var/jenkins_home/docker/ec2-config/* ubuntu@${EC2_CONFIG_IP}:/deploy
+                    ssh -i /var/jenkins_home/aws.pem ubuntu@${EC2_CONFIG_IP} /bin/bash <<'EOT'
+                        cd /deploy
+                        docker compose up -d
+                """         
+            }
+        }
+
+        stage('Run Containers on EC2-EUREKA/APIGATEWAY') {
+            steps {
+                sh """
+                    sleep 60;
+                    scp -r -i /var/jenkins_home/aws.pem /var/jenkins_home/docker/* ubuntu@${EC2_DOMAIN_IP}:/deploy
+                    ssh -i /var/jenkins_home/aws.pem ubuntu@${EC2_DOMAIN_IP} /bin/bash <<'EOT'
+                        cd /deploy/ec2-eureka
+                        docker compose up -d
+                """
+            }
+        }
+
+        stage('Run Containers on EC2-DOMAIN') {
+            steps {
+                sh """
+                    ssh -i /var/jenkins_home/aws.pem ubuntu@${EC2_DOMAIN_IP} /bin/bash <<'EOT'
+                        cd /deploy/ec2-domain/user
+                        docker compose -f docker-compose-user-blue.yml up -d 
+                        cd /deploy/ec2-domain/news
+                        docker compose -f docker-compose-news-blue.yml up -d 
+                        cd /deploy/ec2-domain/notice
+                        docker compose -f docker-compose-notice-blue.yml up -d
+                """               
+            }
+        }
+
+        stage('Set Blue-Green Environment') {
+            steps {
+                sh """
+                    #!/bin/bash
+                    sed -i "s/^export $var_name1=.*/export $var_name1=\"$new_value\"/" ~/.bashrc
+                    sed -i "s/^export $var_name2=.*/export $var_name2=\"$new_value\"/" ~/.bashrc
+                    sed -i "s/^export $var_name3=.*/export $var_name3=\"$new_value\"/" ~/.bashrc
+                """               
+            }
+        }
+    
+    }
+}
