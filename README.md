@@ -11,6 +11,8 @@ newspace-deploy 입니다.
 [https://youtu.be/yXdEaNA0_rc](https://youtu.be/yXdEaNA0_rc)
 
 ## 📍 프로젝트 설명
+25.03.27 ~ 25.04.2
+<br>
 LG CNS AM Inspire Camp
 <br>
 미니프로젝트 2 - 9조
@@ -47,6 +49,8 @@ LG CNS AM Inspire Camp
 Deploy : https://github.com/newspace-msa/newspace-deploy
 <br>
 Frontend : https://github.com/newspace-msa/newspace-frontend
+<br>
+Config : https://github.com/newspace-msa/newspace-config
 <br>
 Config-Server : https://github.com/newspace-msa/newspace-config-service
 <br>
