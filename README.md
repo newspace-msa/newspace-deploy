@@ -44,7 +44,9 @@ LG CNS AM Inspire Camp
 ## 📦 Github Repository
 전체 : https://github.com/orgs/newspace-msa/repositories
 <br>
-frontend : https://github.com/newspace-msa/newspace-frontend
+Deploy : https://github.com/newspace-msa/newspace-deploy
+<br>
+Frontend : https://github.com/newspace-msa/newspace-frontend
 <br>
 Config-Server : https://github.com/newspace-msa/newspace-config-service
 <br>
