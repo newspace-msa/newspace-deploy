@@ -1,10 +1,10 @@
 #!/bin/bash
 
 echo "######################################"
-echo "#                                    #"
-echo "#       NEWSPACE-USER-SERVICE        #"
-echo "#    Blue-Green 무중단 배포 스크립트    #"
-echo "#                                    #"
+echo "                                      "
+echo "        NEWSPACE-USER-SERVICE         "
+echo "     Blue-Green 무중단 배포 스크립트     "
+echo "                                      "
 echo "######################################"
 
 currentDir=$(pwd -P);

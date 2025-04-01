@@ -1,8 +1,8 @@
 // ######################################
-// #                                    #
-// #      Jenkinsfile_aws_reload        #
-// #  NEWSPACE-MSA 통합 재부팅 파이프라인  #
-// #                                    #
+//                                     
+//        Jenkinsfile_aws_reload        
+//    NEWSPACE-MSA 통합 재부팅 파이프라인  
+//                                     
 // ######################################
 
 pipeline {

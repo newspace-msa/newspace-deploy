@@ -1,8 +1,8 @@
 // ######################################
-// #                                    #
-// #       Jenkinsfile_frontend         #
-// #   NEWSPACE-MSA 프론트엔드 파이프라인  #
-// #                                    #
+//                                     
+//         Jenkinsfile_frontend         
+//     NEWSPACE-MSA 프론트엔드 파이프라인  
+//                                     
 // ######################################
 
 pipeline {
