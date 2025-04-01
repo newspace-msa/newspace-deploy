@@ -11,7 +11,6 @@ newspace-deploy 입니다.
 [https://youtu.be/yXdEaNA0_rc](https://youtu.be/yXdEaNA0_rc)
 
 ## 📍 프로젝트 설명
-<br>
 LG CNS AM Inspire Camp
 <br>
 미니프로젝트 2 - 9조
@@ -40,7 +39,7 @@ LG CNS AM Inspire Camp
 <br/>
 
 ## 🏗️ 시스템 아키텍처
-![image](https://github.com/user-attachments/assets/aadb1e74-ba18-495b-8f6b-aef3dba589f0)
+![image](https://www.notion.so/image/attachment%3A872366d9-198d-45e3-bba3-071f16620a81%3Aimage.png?table=block&id=1c75254c-d716-801e-aab6-d346d727e76b&spaceId=105e484e-4347-4f5c-8957-58e7ba82645b&width=2000&userId=66ebfac6-ec70-42fc-abe0-b6a4536eea1e&cache=v2)
 
 ## 📦 Github Repository
 전체 : https://github.com/orgs/newspace-msa/repositories
