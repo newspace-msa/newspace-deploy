@@ -11,7 +11,7 @@ newspace-deploy 입니다.
 [https://youtu.be/yXdEaNA0_rc](https://youtu.be/yXdEaNA0_rc)
 
 ## 📍 프로젝트 설명
-25.03.27 ~ 25.04.2
+25.03.27 ~ 25.04.02
 <br>
 LG CNS AM Inspire Camp
 <br>
