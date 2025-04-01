@@ -23,7 +23,7 @@ pipeline {
     stage('install & build') {
       steps {
           dir("./newspace-frontend") {
-                   writeFile file: '.env.production', text: 'VITE_NEWSPACE_TEST_BACKEND_URL='
+                   writeFile file: '.env.production', text: 'VITE_NEWSPACE_TEST_BACKEND_URL=http://d1wvssrshiud2m.cloudfront.net'
                    sh 'cat .env.production'
                    sh 'npm ci'
                    sh 'npm run build'
