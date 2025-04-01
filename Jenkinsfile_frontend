@@ -23,14 +23,8 @@ pipeline {
     stage('install & build') {
       steps {
           dir("./newspace-frontend") {
-                  // 프론트 엔드 코드에 env 사용하도록 되어 있어서 빈 값으로 설정
-                   writeFile file: '.env.production', text: 'VITE_NEWSPACE_TEST_BACKEND_URL='
-                   sh 'cat .env.production'
                    sh 'npm ci'
                    sh 'npm run build'
-
-                   // 빌드 후 환경 변수 파일 제거
-                   sh 'rm .env.production'
           }
       }
     }
