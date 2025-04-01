@@ -1,15 +1,15 @@
 #!/bin/bash
 currentDir=$(pwd -P);
 server_starting_wait_time=50
-service_name="newspace-user-service"
+service_name="newspace-news-service"
 new_service_color="none"
 
 REMOTE_USER="ubuntu"
 REMOTE_HOST="54.210.46.170"
 
 source /root/.bashrc
-# USER-SERVICE blue 인지 확인 
-RUNNING_DEPLOY_COLOR=$USER_SERVICE_STATUS
+# NEWS-SERVICE blue 인지 확인 
+RUNNING_DEPLOY_COLOR=$NEWS_SERVICE_STATUS
 
 chmod +x ./gradlew
 ./gradlew clean build -x test
@@ -17,8 +17,8 @@ docker buildx build --no-cache -t ${service_name}:latest .
 
 #AWS 오류시 Jenkins 에서 aws configure를 수행했는지 확인
 aws ecr get-login-password --region us-east-1 | docker login --username AWS --password-stdin 803691999553.dkr.ecr.us-east-1.amazonaws.com
-docker tag newspace-user-service:latest 803691999553.dkr.ecr.us-east-1.amazonaws.com/mini-project-9/newspace-user-service:latest
-docker push 803691999553.dkr.ecr.us-east-1.amazonaws.com/mini-project-9/newspace-user-service:latest
+docker tag newspace-news-service:latest 803691999553.dkr.ecr.us-east-1.amazonaws.com/mini-project-9/newspace-news-service:latest
+docker push 803691999553.dkr.ecr.us-east-1.amazonaws.com/mini-project-9/newspace-news-service:latest
 
 echo "RUNNING_DEPLOY_STATUS => ${RUNNING_DEPLOY_COLOR}"
 
@@ -27,18 +27,18 @@ then
     #기존에 BLUE 가 실행되어 있어 도커 컴포즈 BLUE 실행 
 ssh -i /var/jenkins_home/aws.pem ${REMOTE_USER}@${REMOTE_HOST} /bin/bash << EOT
     aws ecr get-login-password --region us-east-1 | docker login --username AWS --password-stdin 803691999553.dkr.ecr.us-east-1.amazonaws.com
-    docker pull 803691999553.dkr.ecr.us-east-1.amazonaws.com/mini-project-9/newspace-user-service:latest
-    cd /deploy/user
-    docker compose -f docker-compose-user-green.yml up -d 
+    docker pull 803691999553.dkr.ecr.us-east-1.amazonaws.com/mini-project-9/newspace-news-service:latest
+    cd /deploy/news
+    docker compose -f docker-compose-news-green.yml up -d 
 EOT
     new_service_color="green"
 else
     #기존에 GREEN 가 실행되어 있어 도커 컴포즈 BLUE 실행 
 ssh -i /var/jenkins_home/aws.pem ${REMOTE_USER}@${REMOTE_HOST} /bin/bash << EOT
     aws ecr get-login-password --region us-east-1 | docker login --username AWS --password-stdin 803691999553.dkr.ecr.us-east-1.amazonaws.com
-    docker pull 803691999553.dkr.ecr.us-east-1.amazonaws.com/mini-project-9/newspace-user-service:latest
-    cd /deploy/user
-    docker compose -f docker-compose-user-blue.yml up -d 
+    docker pull 803691999553.dkr.ecr.us-east-1.amazonaws.com/mini-project-9/newspace-news-service:latest
+    cd /deploy/news
+    docker compose -f docker-compose-news-blue.yml up -d 
 EOT
     new_service_color="blue"
 fi
@@ -69,9 +69,9 @@ fi
 if [ $RUNNING_DEPLOY_COLOR = "blue" ]
 then
     #Config 서버의 환경변수를 변경합니다. <Jenkins>
-    # echo 'export USER_SERVICE_STATUS="green"' >> ~/.bashrc
+    # echo 'export NEWS_SERVICE_STATUS="green"' >> ~/.bashrc
 
-    var_name="USER_SERVICE_STATUS"
+    var_name="NEWS_SERVICE_STATUS"
     new_value="green"
     # .bashrc 파일에서 변수 변경
     sed -i "s/^export $var_name=.*/export $var_name=\"$new_value\"/" ~/.bashrc
@@ -80,15 +80,15 @@ then
     echo "Shut down blue service..."
     #기존 BLUE를 내립니다. <Remote>
 ssh -i /var/jenkins_home/aws.pem ${REMOTE_USER}@${REMOTE_HOST} /bin/bash << EOT
-    cd /deploy/user
-    docker compose -f docker-compose-user-blue.yml down
+    cd /deploy/news
+    docker compose -f docker-compose-news-blue.yml down
 EOT
 
 else
     #Config 서버의 환경변수를 변경합니다. <Jenkins>
-    # echo 'export USER_SERVICE_STATUS="blue"' >> ~/.bashrc
+    # echo 'export NEWS_SERVICE_STATUS="blue"' >> ~/.bashrc
 
-    var_name="USER_SERVICE_STATUS"
+    var_name="NEWS_SERVICE_STATUS"
     new_value="blue"
     # .bashrc 파일에서 변수 변경
     sed -i "s/^export $var_name=.*/export $var_name=\"$new_value\"/" ~/.bashrc
@@ -98,8 +98,8 @@ else
     echo "Shut down green service..."
     #기존 GREEN을 내립니다. <Remote>
 ssh -i /var/jenkins_home/aws.pem ${REMOTE_USER}@${REMOTE_HOST} /bin/bash << EOT
-    cd /deploy/user
-    docker compose -f docker-compose-user-green.yml down
+    cd /deploy/news
+    docker compose -f docker-compose-news-green.yml down
 EOT
 
 fi
