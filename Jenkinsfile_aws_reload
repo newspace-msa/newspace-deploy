@@ -41,50 +41,6 @@ pipeline {
             }
         }
         
-        stage('Git clone') {
-            steps {
-                script {
-                    parallel(
-                        "Clone Config-server": {
-                            dir('newspace-config-service') {
-                                git branch: 'main', url: 'https://github.com/newspace-msa/newspace-config-service'
-                            }
-                        },
-                        "Clone Backend-News": {
-                            dir('newspace-news-service') {
-                                git branch: 'main', url: 'https://github.com/newspace-msa/newspace-news-service'
-                            }
-                        },
-                        "Clone Backend-User": {
-                            dir('newspace-user-service') {
-                                git branch: 'main', url: 'https://github.com/newspace-msa/newspace-user-service'
-                            }
-                        },
-                        "Clone Backend-Notice": {
-                            dir('newspace-notice-service') {
-                                git branch: 'main', url: 'https://github.com/newspace-msa/newspace-notice-service'
-                            }
-                        },
-                        "Clone Eureka": {
-                            dir('newspace-eureka') {
-                                git branch: 'main', url: 'https://github.com/newspace-msa/newspace-eureka'
-                            }
-                        },
-                        "Clone Gateway": {
-                            dir('newspace-gateway') {
-                                git branch: 'main', url: 'https://github.com/newspace-msa/newspace-gateway'
-                            }
-                        },
-                        "Clone Deploy": {
-                            dir('newspace-deploy') {
-                                git branch: 'main', url: 'https://github.com/newspace-msa/newspace-deploy'
-                            }
-                        }
-                    )
-                }
-            }
-        }
-        
         stage('Initial Setup') {
             steps {
                 script {
