@@ -7,7 +7,7 @@ newspace-deploy 입니다.
 해당 레포지토리에는 CI/CD에 필요한 Jenkinsfile과 무중단 배포 스크립트가 포함되어있습니다. 
 <br>
 
-## 📽️ CI/CD 배포 시연 영상
+## 📽️ CI/CD 파이프라인 시연 영상
 [Jenkins AWS EC2 블루 그린 무중단 배포 유튜브 링크](https://youtu.be/nRx-jOo8CAo?si=7Z5pfg4jXD5fLKP3)
 <br>
 [Jenkins 프론트엔드 CI/CD 파이프라인 시연 영상 유튜브 링크](https://youtu.be/eHqqQJe2igI?si=ICVVzMIt1_MNfs-b)
