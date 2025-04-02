@@ -8,7 +8,8 @@ newspace-deploy 입니다.
 <br>
 
 ## 📽️ CI/CD 배포 시연 영상
-[https://youtu.be/yXdEaNA0_rc](https://youtu.be/yXdEaNA0_rc)
+[Jenkins AWS EC2 블루 그린 무중단 배포 유튜브 링크](https://youtu.be/nRx-jOo8CAo?si=7Z5pfg4jXD5fLKP3)
+[Jenkins 백엔드 CI/CD 파이프라인 시연 영상 유튜브 링크](https://youtu.be/-oRP9SXSFeI?si=E5c8gun3oIVVAMAN)
 
 ## 📍 프로젝트 설명
 25.03.27 ~ 25.04.02
