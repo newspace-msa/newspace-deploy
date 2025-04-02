@@ -25,7 +25,7 @@ pipeline {
         DEPLOY_NAME = "newspace-deploy"
         TAG = "latest"
         EC2_CONFIG_IP="3.83.45.79"
-        EC2_DOMAIN_IP="3.85.20.28"
+        EC2_DOMAIN_IP="18.212.172.234"
         var_name1="USER_SERVICE_STATUS"
         var_name2="NEWS_SERVICE_STATUS"
         var_name3="NOTICE_SERVICE_STATUS"
