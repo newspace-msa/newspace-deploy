@@ -13,7 +13,7 @@ service_name="newspace-user-service"
 new_service_color="none"
 
 REMOTE_USER="ubuntu"
-REMOTE_HOST="54.210.46.170"
+REMOTE_HOST="3.85.20.28"
 
 source /root/.bashrc
 # USER-SERVICE blue 인지 확인 

@@ -13,7 +13,7 @@ service_name="newspace-news-service"
 new_service_color="none"
 
 REMOTE_USER="ubuntu"
-REMOTE_HOST="54.210.46.170"
+REMOTE_HOST="3.85.20.28"
 
 source /root/.bashrc
 # NEWS-SERVICE blue 인지 확인 
